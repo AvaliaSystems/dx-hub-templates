@@ -64,6 +64,7 @@ spec:
       name: Publish
       action: publish:github
       input:
+        repoUrl: ${{ parameters.repoUrl }}
         description: This is ${{ parameters.name }}
         gitCommitMessage: Creating project structure from DX Hub template
         gitAuthorName: DX Hub
