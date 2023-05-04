@@ -1,0 +1,29 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: ${{values.name }}-system
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.name }}-backend
+spec:
+  system: ${{ values.name }}-system
+  type: backend
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.name }}-frontend
+spec:
+  system: ${{ values.name }}-system
+  type: frontend
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}

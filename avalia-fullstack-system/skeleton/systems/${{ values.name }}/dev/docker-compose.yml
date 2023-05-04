@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: traefik:v2.8
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true" 
+      - "--api.dashboard=true" 
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  ${{ values.name }}-backend:
+    image: avaliasystems/simple-backend:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${{ values.name }}-backend.rule=Host(`${{ values.name }}-backend.ch`)"
+      - "traefik.http.services.${{ values.name }}-backend.loadbalancer.server.port=8080"
+      - "traefik.http.routers.${{ values.name }}-backend.entrypoints=web"
+
+  ${{ values.name }}-frontend:
+    image: avaliasystems/simple-frontend:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${{ values.name }}-frontend.rule=Host(`${{ values.name }}-frontend.ch`)"
+      - "traefik.http.routers.${{ values.name }}-frontend.entrypoints=web"

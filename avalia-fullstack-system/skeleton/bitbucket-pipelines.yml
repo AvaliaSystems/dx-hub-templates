@@ -1,0 +1,91 @@
+definitions: 
+  caches:
+    frontend: components/simple-frontend/node_modules
+
+pipelines:
+  pull-requests:
+    '**':
+    # 
+    # Every time someone opens a PR (or pushes a commit on a PR)
+    # Build backend (only when files have changed in the corresponding directory)
+    #
+      - step:
+          name: Build backend
+          image: maven:3.8.3-openjdk-17
+          caches:
+              - maven
+              - docker
+          script:
+            - cd components/simple-backend
+            - mvn -B verify --file pom.xml
+            - docker build -t avaliasystems/simple-backend .
+          condition:
+            changesets:
+              includePaths:
+                - "components/simple-backend/**"
+          services:
+            - docker
+
+    #
+    # Every time someone opens a PR (or pushes a commit on a PR)
+    # Build frontend (only when files have changed in the corresponding directory)
+    #
+      - step:
+          name: Build frontend
+          image: node:18
+          caches:
+              - frontend
+              - docker
+          script:
+            - cd components/simple-frontend
+            - npm install
+            - npm run build
+            - docker build -t avaliasystems/simple-frontend .
+          condition:
+            changesets:
+              includePaths:
+                - "components/simple-frontend/**"
+          services:
+            - docker
+
+    #
+    # Every time someone opens a PR (or pushes a commit on a PR)
+    # Run a Terraform plan
+    #
+      - step:
+          name: Terraform plan
+          image: avaliasystems/terraform:1.2.4 
+          script:
+            - cd infrastructure
+            - ./tf.sh dev init
+            - ./tf.sh dev plan
+            - ./tf.sh prod init
+            - ./tf.sh prod plan
+          condition:
+            changesets:
+              includePaths:
+                - "infrastructure/**"
+          services:
+            - docker
+
+  branches:
+    master:
+    #
+    # Every time we merge on master and infrastructure has changed
+    # Run a Terraform apply
+    #
+      - step:
+          name: Terraform apply
+          image: avaliasystems/terraform:1.2.4 
+          script:
+            - cd infrastructure
+            - ./tf.sh dev init
+            - ./tf.sh dev apply -auto-approve 
+            - ./tf.sh prod init
+            - ./tf.sh prod apply -auto-approve 
+          condition:
+            changesets:
+              includePaths:
+                - "infrastructure/**"
+          
+

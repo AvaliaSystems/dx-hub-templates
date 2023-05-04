@@ -1,0 +1,11 @@
+site_name: ${{ values.name }}
+
+nav:
+  - Introduction: index.md
+  - Architecture: architecture.md
+  # - Deployment: deployment.md
+  - Discussion: discussion.md
+
+plugins:
+  - techdocs-core
+  - kroki

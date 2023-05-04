@@ -1,0 +1,84 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: avalia-template-fullstack-system
+  title: Full Stack System
+  description: A full stack system, with a SpringBoot backend and a Vue.js frontend
+  tags:
+    - avalia
+spec:
+  owner: avalia-systems
+  type: System
+  parameters:
+    - title: Give a name to your system
+      required:
+        - name
+        - description
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: A description for the component
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  # This template is meant to be used on top of an existing template.
+  # By adding the following and fetching from an absolute URL you can
+  # add in the docs template
+  steps:
+    - id: fetch
+      name: Copy Template Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          owner: ${{ parameters.owner }}
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        description: This is ${{ parameters.name }}
+        gitCommitMessage: Creating project structure from DX Hub template
+        gitAuthorName: DX Hub
+
+    - id: register
+      name: Register system and components
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Open ${{ parameters.name }} git repository
+        url: ${{ steps.publish.output.repoContentsUrl }}
+      - title: Open ${{ parameters.name }} in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
