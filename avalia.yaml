@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: scaffolder-templates-avalia
+  description: A collection of scaffolder templates created by Avalia Systems
+spec:
+  targets:
+    - ./avalia-fullstack-system/template.yaml
