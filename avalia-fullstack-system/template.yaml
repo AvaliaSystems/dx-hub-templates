@@ -79,7 +79,7 @@ spec:
   output:
     links:
       - title: Open ${{ parameters.name }} git repository
-        url: ${{ steps.publish.output.repoContentsUrl }}
+        url: ${{ steps.publish.output.remoteUrl }}
       - title: Open ${{ parameters.name }} in catalog
         icon: catalog
         entityRef: ${{ steps.register.output.entityRef }}
